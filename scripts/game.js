@@ -712,7 +712,7 @@ class Level {
         this.width = width;
         this.height = height;
         this.player = player;
-        this.currentLevel = 3;
+        this.currentLevel = 0;
         this.HotValue = 0.0;
 
         this.setup();
