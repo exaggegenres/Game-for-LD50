@@ -1,0 +1,118 @@
+<html>
+    <head>
+        <title>Stuck in hot rooms</title>
+    </head>
+
+    <body>
+        <script id="vshader" type="x-shader/x-vertex">#version 300 es
+            precision highp float;
+
+            in vec3 position;
+            in vec2 texCoords;
+            out highp vec3 frag_pos;
+            out highp vec2 frag_texCoords;
+            
+            uniform mat4 project;
+            uniform mat4 view;
+            uniform mat4 model;
+            uniform int doubleWise;
+
+            void main(void) {
+                gl_Position = project*view*model*vec4(position, 1.0);
+                frag_pos = position;
+                if(doubleWise == 1) {
+                    frag_texCoords = texCoords*vec2(0.25, 0.25);
+                } else {
+                    frag_texCoords = texCoords;
+                }
+            }
+
+        </script>
+        <script id="fshader" type="x-shader/x-fragment">#version 300 es
+            precision highp float;
+            
+            out vec4 frag_color;
+
+            in highp vec3 frag_pos;
+            in highp vec2 frag_texCoords;
+            uniform sampler2D u_texture;
+            uniform vec3 cameraPos;
+            uniform float hotValue;
+
+            void main(void) {
+                float dx = cameraPos.x-frag_pos.x;
+                float dy = cameraPos.y-frag_pos.y;
+                float dz = cameraPos.z-frag_pos.z;
+
+                float fading = 0.6;
+                float distance = 1.0/(sqrt(dx*dx+dy*dy+dz*dz)*fading*fading*fading*fading);
+                float shade = distance*(1.0-hotValue*0.5);
+                if(shade > 0.9) shade = 0.9;
+                vec4 pixel = texture(u_texture, frag_texCoords);
+                vec3 pixelNoAlpha = pixel.rgb;
+                float dangerFactor = (hotValue*0.01);
+                frag_color = vec4(pixelNoAlpha*shade, pixel.a)*vec4(1.0, 1.0-hotValue, 1.0-hotValue, 1.0);
+                if(frag_color.a < 0.1) discard;
+            }
+        </script>
+        <script id="vshader_2d" type="x-shader/x-vertex">#version 300 es
+            precision highp float;
+
+            in vec3 position;
+            in vec2 texCoords;
+            in vec3 colorCoords;
+            
+            out highp vec3 frag_pos;
+            out highp vec2 frag_texCoords;
+            out highp vec3 frag_colorCoords;
+            
+            uniform mat4 project;
+            uniform mat4 view;
+            uniform mat4 model;
+
+            void main(void) {
+                gl_Position = project*view*model*vec4(position, 1.0);
+                frag_pos = position;
+                frag_texCoords = texCoords;
+                frag_colorCoords = colorCoords;
+                
+            }
+
+        </script>
+        <script id="fshader_2d" type="x-shader/x-fragment">#version 300 es
+            precision highp float;
+            
+            out vec4 frag_color;
+
+            in highp vec3 frag_pos;
+            in highp vec2 frag_texCoords;
+            in highp vec3 frag_colorCoords;
+            
+            uniform sampler2D u_texture;
+            uniform int useTexture; 
+
+            void main(void) {
+                vec4 pixel = texture(u_texture, frag_texCoords);
+                
+                if(useTexture == 1) {
+                    frag_color = pixel*vec4(frag_colorCoords, 1.0);
+                } else if(useTexture == 0) {
+                    frag_color = vec4(frag_colorCoords, 1.0);
+                }
+                if(frag_color.a < 0.1) discard;
+            }
+        </script>
+
+        <canvas width="1000" height="600" id="game"></canvas>
+        <script src="scripts/matLib/gl-matrix-min.js"></script>
+        <script src="scripts/levelsList.js"></script>
+        <script src="scripts/textureManager.js"></script>
+        <script src="scripts/EventManager.js"></script>
+        <script src="scripts/shaderManager.js"></script>
+        <script src="scripts/textureStorage.js"></script>
+        <script src="scripts/vertexArrayBufferObject.js"></script>
+        <script src="scripts/2dRenderer.js"></script>
+        <script src="scripts/SolidRenderer.js"></script>
+        <script src="scripts/game.js"></script>
+    </body>
+</html>
