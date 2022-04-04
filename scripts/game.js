@@ -288,7 +288,7 @@ class NextLevelScreen extends Screen {
     constructor(player) {
         super(player);
         playSound("sounds/newLevel.wav");
-        c = true;
+        this.c = true;
     }
 
     render() {
